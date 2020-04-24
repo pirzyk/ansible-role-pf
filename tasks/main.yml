@@ -1,0 +1,38 @@
+---
+# tasks file for coffeesprout.pf
+
+- name: ensure packet forwarding is enabled in sysctl
+  sysctl:
+    name: "{{ item }}"
+    value: 1
+  when: pf_enable_gateway
+  loop:
+  - net.inet.ip.forwarding
+  - net.inet6.ip6.forwarding
+  tags:
+  - sysctl
+
+- name: ensure pf is enabled in rc.conf
+  sysrc:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+  loop: "{{ pf_rc_conf }}"
+  tags:
+  - services
+  - configuration
+
+- name: ensure pf.conf is created
+  template:
+    dest: /etc/pf.conf
+    src: pf.conf
+    backup: yes
+    validate: '/sbin/pfctl -nf %s'
+  tags:
+  - configure
+
+- name: set pf rules
+  command: /sbin/pfctl -f /etc/pf.conf
+  tags:
+  - configure
+  - enable
+  - firewall

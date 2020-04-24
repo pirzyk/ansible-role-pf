@@ -1,0 +1,12 @@
+---
+
+- hosts: all
+  become: True
+  roles:
+  - role: coffeesprout.pf
+    pf_tcp_pass_out:
+    - 22
+    - 80
+    - 443
+    - 10000
+    - 20000 

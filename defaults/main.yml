@@ -1,0 +1,45 @@
+---
+# defaults file for bvansomeren.pf
+
+pf_limit_states: 400000
+pf_ip_pub: "{{ ansible_default_ipv4.address }}"
+pf_ext_if: "{{ ansible_default_ipv4.device }}"
+
+pf_skip:
+- lo0
+
+pf_enable_gateway: False
+
+pf_localnet: 10.0.0.0/8
+
+pf_tcp_pass_in:
+- "{{ sshd_port | default('22') }}"
+
+pf_tcp_pass_out:
+- 22
+- 80
+- 443
+
+pf_udp_pass:
+- 53
+- 67
+- 68
+- 123
+
+pf_rc_conf:
+- name: "pf_enable"
+  value: "YES"
+- name: "pf_flags"
+  value: ""
+- name: "pflog_enable"
+  value: "YES"
+- name: "pflog_logfile"
+  value: "/var/log/pflog"
+- name: "pflog_flags"
+  value: ""
+- name: "pf_rules"
+  value: "/etc/pf.conf"
+- name: "gateway_enable"
+  value: "{{ pf_enable_gateway | ternary('YES', 'NO') }}"
+- name: "ipv6_gateway_enable"
+  value: "{{ pf_enable_gateway | ternary('YES', 'NO') }}"
