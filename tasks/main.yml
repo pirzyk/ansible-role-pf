@@ -1,6 +1,11 @@
 ---
 # tasks file for coffeesprout.pf
 
+- name: ensure pf module is loaded
+  kld:
+    name: pf
+    boot: True
+
 - name: ensure packet forwarding is enabled in sysctl
   sysctl:
     name: "{{ item }}"
