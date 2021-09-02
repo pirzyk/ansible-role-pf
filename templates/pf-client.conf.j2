@@ -1,0 +1,60 @@
+# Tables
+table <me> const { {{(ansible_all_ipv4_addresses + ansible_all_ipv6_addresses) | join(', ')}} }
+table <mynetwork> const { {{pf_my_network | join(', ')}} }
+{% if pf_fail2ban %}
+table <fb> persist file "/var/db/fail2ban/fail2ban.txt"
+{% endif %}
+
+# Options
+{% for item in pf_options %}
+set {{ item.key }} {{ item.value }}
+{% endfor %}
+set skip on { {{pf_skip | join(' ')}} }
+
+scrub in all
+
+{% if pf_fail2ban %}
+# Block badhosts right away
+block drop in quick log on {{ pf_ext_if }} from <fb> to any
+{% endif %}
+{% if pf_nolog_ports %}
+# Block (and not log) filterports everywhere
+block drop in proto { tcp, udp } from any to any port { {{ pf_nolog_ports | join(', ') }} }
+{% endif %}
+
+# Default to block inbound traffic to our primary interface
+block in log on { {{ pf_ext_if }} }
+
+antispoof quick log for { {{ ansible_interfaces | join(', ') }} }
+
+{% if pf_secondary_if %}
+# Interfaces we allow all traffic on...
+pass in on {{ pf_secondary_if }} proto { tcp, udp } from {{ pf_secondary_net }} to {{ pf_secondary_ip }} flags any
+{% endif %}
+
+# Allow all outbound traffic
+pass out all allow-opts keep state
+
+{% if dhclient_interface %}
+# DHCP(v6) rules
+pass in on {{ pf_ext_if }} proto { tcp, udp } from any to any port { bootps, bootpc, dhcpv6-client, dhcpv6-server }
+pass in on {{ pf_ext_if }} inet6 proto icmp6 from any to ff02::/16 
+pass in on {{ pf_ext_if }} inet6 proto icmp6 from fe80::/10 to fe80::/10
+pass in on {{ pf_ext_if }} inet6 proto icmp6 from fe80::/10 to ff02::/16 
+pass in on {{ pf_ext_if }} inet6 proto icmp6 from any to any icmp6-type { unreach, toobig, timex, echoreq, echorep, neighbrsol, neighbradv } 
+{% endif %}
+
+{% if openvpn_role == 'client' %}
+# OpenVPN access
+pass in on {{ pf_ext_if }} proto {{ openvpn_proto }} from {{ openvpn_client_server }} port {{ openvpn_port }} to <me> flags any
+pass out on {{ pf_ext_if }} proto {{ openvpn_proto }} from <me> to {{ openvpn_client_server }} port {{ openvpn_port }} flags any
+{% endif %}
+
+# Traffic to allow into us
+pass in on {{ pf_ext_if }} proto udp from <mynetwork> to <me> port { {{ pf_udp_pass | join(', ') }} } flags any
+pass out on {{ pf_ext_if }} proto udp from <me> to <mynetwork> port { {{ pf_udp_pass | join(', ') }} } flags any
+pass in on {{ pf_ext_if }} proto tcp from <mynetwork> to <me> port { {{ pf_tcp_pass_in | join(', ') }} } flags any
+pass in on {{ pf_ext_if }} proto tcp from { {{ pf_allow_hosts | join(', ')}} } to <me> flags any
+pass in on {{ pf_ext_if }} proto udp from { {{ pf_allow_hosts | join(', ')}} } to <me> flags any
+pass out on {{ pf_ext_if }} proto udp from <me> to { {{ pf_allow_hosts | join(', ')}} } flags any
+pass in on {{ pf_ext_if }} inet proto icmp from <mynetwork> to <me>

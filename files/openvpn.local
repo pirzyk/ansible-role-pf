@@ -1,0 +1,32 @@
+# Fail2Ban configuration file
+#
+#
+
+[INCLUDES]
+
+# Read common prefixes. If any customizations available -- read them from
+# common.local
+before = common.conf
+
+[Definition]
+
+# Option:  failregex
+# Notes.:  regex to match the failures messages in the logfile. The
+#          host must be matched by a group named "host". The tag "<HOST>" can
+#          be used for standard IP/hostname matching and is only an alias for
+#          (?:::f{4,6}:)?(?P<host>\S+)
+# Values:  TEXT
+#
+
+# Dec 27 15:19:48 <daemon.err> zephyr openvpn[1791]: 141.98.80.6:2882 Fatal TLS error (check_tls_errors_co), restarting
+# Apr 16 15:00:53 <daemon.err> zephyr openvpn[1793]: 208.100.26.230:47356 Connection reset, restarting [0] 
+# Jul  3 04:36:54 <daemon.err> zephyr openvpn[22378]: TLS Error: cannot locate HMAC in incoming packet from [AF_INET6]::ffff:185.200.118.89:33311
+failregex = <HOST>:[0-9]{4,5} Connection reset, restarting
+            <HOST>:[0-9]{4,5} Fatal TLS error \(check_tls_errors_co\), restarting
+            TLS Error: cannot locate HMAC in incoming packet from \[AF_INET6\]::ffff:<HOST>:[0-9]{4,5}
+
+# Option:  ignoreregex
+# Notes.:  regex to ignore. If this regex matches, the line is ignored.
+# Values:  TEXT
+#
+ignoreregex = logfile turned over

@@ -1,0 +1,83 @@
+---
+# Tasks to install and start fail2ban
+
+- name: 'fail2ban: install package'
+  community.general.pkgng:
+    name: "py{{ ansible_python.version.major }}{{ ansible_python.version.minor }}-fail2ban"
+    state: present
+
+- name: 'fail2ban: create db dir'
+  ansible.builtin.file:
+    state: directory
+    access_time: preserve
+    modification_time: preserve
+    path: '/var/db/fail2ban'
+    owner: root
+    group: wheel
+    mode: "0750"
+
+- name: 'fail2ban: create persist file'
+  ansible.builtin.file:
+    state: touch
+    access_time: preserve
+    modification_time: preserve
+    path: '/var/db/fail2ban/fail2ban.txt'
+    owner: root
+    group: wheel
+    mode: "0644"
+
+- name: 'fail2ban: add openvpn filter'
+  ansible.builtin.copy:
+    src: openvpn.local
+    dest: "{{ pf_fail2ban_dir }}/filter.d/openvpn.local"
+    owner: root
+    group: wheel
+    mode: "0644"
+  notify: restart fail2ban
+
+- name: 'fail2ban: add milter-regex filter'
+  ansible.builtin.copy:
+    src: milter-regex.local
+    dest: "{{ pf_fail2ban_dir }}/filter.d/milter-regex.local"
+    owner: root
+    group: wheel
+    mode: "0644"
+  notify: restart fail2ban
+
+- name: 'fail2ban: add bsd-pf config'
+  ansible.builtin.copy:
+    src: bsd-pf.conf
+    dest: "{{ pf_fail2ban_dir }}/action.d/bsd-pf.conf"
+    owner: root
+    group: wheel
+    mode: "0644"
+  notify: restart fail2ban
+
+- name: 'fail2ban: create fail2ban.local'
+  template:
+    dest: "{{ pf_fail2ban_dir }}/fail2ban.local"
+    src: fail2ban.local.j2
+    owner: root
+    group: wheel
+    mode: "0644"
+  notify: restart fail2ban
+
+- name: 'fail2ban: create jail.local'
+  template:
+    dest: "{{ pf_fail2ban_dir }}/jail.local"
+    src: jail.local.j2
+    owner: root
+    group: wheel
+    mode: "0644"
+  notify: restart fail2ban
+
+- name: 'fail2ban: enable jail services'
+  ansible.builtin.template:
+    src: service.local.j2
+    dest: "{{ pf_fail2ban_dir }}/jail.d/{{ item }}.local"
+    owner: root
+    group: wheel
+    mode: "0644"
+  with_items: "{{ pf_fail2ban_conf | default([]) }}"
+  loop_control:
+    label: "{{ item }}.local"

@@ -1,0 +1,6 @@
+[DEFAULT]
+bantime = 90days
+findtime = 1day
+ignoreip = 127.0.0.1 ::1 {{(ansible_all_ipv4_addresses + ansible_all_ipv6_addresses)|join(' ')}} {{ pf_my_network|join(' ') }}
+
+action = bsd-pf[actiontype=<allports>]

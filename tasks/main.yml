@@ -1,21 +1,14 @@
 ---
 # tasks file for coffeesprout.pf
 
+# Generate a list of interfaces that will take thd default firewall rules
+- set_fact:
+    pf_default_ifs: "{{ ansible_interfaces | difference(pf_skip | default([])) | difference(pf_secure_ifs | default([])) | difference([pf_ext_if]) }}"
+
 - name: ensure pf module is loaded
   kld:
     name: pf
     boot: True
-
-- name: ensure packet forwarding is enabled in sysctl
-  sysctl:
-    name: "{{ item }}"
-    value: 1
-  when: pf_enable_gateway
-  loop:
-  - net.inet.ip.forwarding
-  - net.inet6.ip6.forwarding
-  tags:
-  - sysctl
 
 - name: ensure pf is enabled in rc.conf
   community.general.sysrc:
@@ -26,21 +19,20 @@
   - services
   - configuration
 
+- name: Install fail2ban
+  include_tasks:
+    file: 'fail2ban.yml'
+  when: pf_fail2ban|bool
+
 - name: ensure pf.conf is created
   template:
     dest: /etc/pf.conf
-    src: pf.conf
+    src: "{{ 'pf-router.conf.j2' if pf_enable_gateway else 'pf-client.conf.j2' }}"
     backup: yes
     validate: '/sbin/pfctl -nf %s'
     owner: 0
     group: 0
     mode: '0600'
+  notify: Reload PF
   tags:
   - configure
-
-- name: set pf rules
-  command: /sbin/pfctl -f /etc/pf.conf
-  tags:
-  - configure
-  - enable
-  - firewall
