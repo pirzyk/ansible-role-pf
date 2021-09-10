@@ -2,7 +2,7 @@
 table <me> const { {{(ansible_all_ipv4_addresses + ansible_all_ipv6_addresses) | join(', ')}} }
 table <mynetwork> const { {{pf_my_network | join(', ')}} }
 {% if pf_fail2ban %}
-table <fb> persist file "/var/db/fail2ban/fail2ban.txt"
+table <f2b> persist file "/var/db/fail2ban/fail2ban.txt"
 {% endif %}
 
 # Options
@@ -15,7 +15,7 @@ scrub in all
 
 {% if pf_fail2ban %}
 # Block badhosts right away
-block drop in quick log on {{ pf_ext_if }} from <fb> to any
+block drop in quick log on {{ pf_ext_if }} from <f2b> to any
 {% endif %}
 {% if pf_nolog_ports %}
 # Block (and not log) filterports everywhere
