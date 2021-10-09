@@ -3,7 +3,7 @@
 
 # Generate a list of interfaces that will take thd default firewall rules
 - set_fact:
-    pf_default_ifs: "{{ ansible_interfaces | difference(pf_skip | default([])) | difference(pf_secure_ifs | default([])) | difference([pf_ext_if]) }}"
+    pf_default_ifs: "{{ ansible_interfaces | difference(pf_skip | default([])) | difference(pf_secure_ifs | default([])) | difference([ pf_primary_interface ]) }}"
 
 - name: ensure pf module is loaded
   kld:
@@ -27,7 +27,7 @@
 - name: ensure pf.conf is created
   template:
     dest: /etc/pf.conf
-    src: "{{ 'pf-router.conf.j2' if pf_enable_gateway else 'pf-client.conf.j2' }}"
+    src: pf.conf.j2
     backup: yes
     validate: '/sbin/pfctl -nf %s'
     owner: 0

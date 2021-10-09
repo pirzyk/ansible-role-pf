@@ -1,30 +1,58 @@
 ---
-# defaults file for bvansomeren.pf
+# Some sane PF defaults
 
-pf_limit_states: 400000
-pf_ip_pub: "{{ ansible_default_ipv4.address }}"
-pf_ext_if: "{{ ansible_default_ipv4.device }}"
+pf_fail2ban: False
+pf_fail2ban_dir: '/usr/local/etc/fail2ban'
 
-pf_skip:
-- lo0
-
-pf_enable_gateway: False
-
-pf_localnet: 10.0.0.0/8
-
-pf_tcp_pass_in:
-- "{{ sshd_port | default('22') }}"
-
-pf_tcp_pass_out:
-- 22
-- 80
-- 443
+pf_primary_interface: 'em0'
 
 pf_udp_pass:
-- 53
-- 67
-- 68
-- 123
+  - domain
+pf_tcp_pass_in:
+  - domain
+  - ssh
+  - http
+  - https
+
+pf_skip:
+  - lo0
+  - pflog0
+
+pf_tables:
+  - { key: 'me', value: "const { {{ (ansible_all_ipv4_addresses + ansible_all_ipv6_addresses) | join(' ') }} }" }
+  - { key: 'privatenets', value: "const { 0.0.0.0/8 10.0.0.0/8 20.20.20.0/24 127.0.0.0/8 169.254.0.0/16 172.16.0.0/12 192.0.2.0/24 192.168.0.0/16 224.0.0.0/3 }" }
+  #- { key: 'f2b', value: 'persist counters file "/var/db/fail2ban/fail2ban.txt"'
+
+pf_options:
+  - { key: 'ruleset-optimization', value: 'basic' }
+  - { key: 'optimization', value: 'normal' }
+  - { key: 'block-policy', value: 'drop' }
+  - { key: 'fail-policy', value: 'drop' }
+  - { key: 'state-policy', value: 'if-bound' }
+  - { key: 'debug', value: 'urgent' }
+
+pf_rules:
+  - 'scrub in all'
+  #- "block drop in quick log on {{ pf_primary_interface }} from <f2b> to any"                                      # Enable if we want to use py-fail2ban
+  #- "block drop in from any to any port { {{ pf_nolog_ports | join(' ') }} }"                                      # Do not log certain traffic
+  # NAT based rules
+  #- "nat on {{ pf_primary_interface }} inet from !({{ pf_primary_interface }}) -> ({{ pf_primary_interface }}:0)"
+  #- "block drop in quick log on {{ pf_primary_interface }} from <privatenets> to any"
+  #- "block drop out quick log on {{ pf_primary_interface }} from any to <privatenets>"
+  - "block in log on { {{ pf_primary_interface }} }"
+  - "antispoof quick log for { {{ ansible_interfaces | join(' ') }} }"
+  # Allow all outbound traffic
+  - 'pass out all allow-opts keep state'
+  # DHCP(v6) rules
+  - "pass in on {{ pf_primary_interface }} proto { tcp, udp } from any to any port { bootps, bootpc, dhcpv6-client, dhcpv6-server }"
+  - "pass in on {{ pf_primary_interface }} inet6 proto icmp6 from any to ff02::/16 "
+  - "pass in on {{ pf_primary_interface }} inet6 proto icmp6 from fe80::/10 to fe80::/10"
+  - "pass in on {{ pf_primary_interface }} inet6 proto icmp6 from fe80::/10 to ff02::/16 "
+  - "pass in on {{ pf_primary_interface }} inet6 proto icmp6 from any to any icmp6-type { unreach, toobig, timex, echoreq, echorep, neighbrsol, neighbradv }"
+  # Generic rules
+  - "pass in on {{ pf_primary_interface }} proto udp from any to <me> port { {{ pf_udp_pass | join(', ') }} } flags any"
+  - "pass out on {{ pf_primary_interface }} proto udp from <me> to any port { {{ pf_udp_pass | join(', ') }} } flags any"
+  - "pass in on {{ pf_primary_interface }} proto tcp from any to <me> port { {{ pf_tcp_pass_in | join(', ') }} } flags any"
 
 pf_rc_conf:
 - name: "pf_enable"

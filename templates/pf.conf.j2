@@ -1,0 +1,17 @@
+{% if pf_tables %}
+# Tables
+{% for item in pf_tables %}
+table <{{ item.key }}> {{ item.value }}
+{% endfor %}
+{% endif %}
+
+# Options
+{% for item in pf_options %}
+set {{ item.key }} {{ item.value }}
+{% endfor %}
+set skip on { {{pf_skip | join(' ')}} }
+
+# Rules
+{% for item in pf_rules %}
+{{ item }}
+{% endfor %}
