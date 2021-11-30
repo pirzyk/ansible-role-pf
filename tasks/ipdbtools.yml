@@ -1,0 +1,25 @@
+---
+# Tasks to install and start ipdbtools
+
+- name: 'ipdbtools: install package'
+  community.general.pkgng:
+    name: 'ipdbtools'
+    state: present
+
+- name: 'ipdbtools: create db dir'
+  ansible.builtin.file:
+    state: directory
+    access_time: preserve
+    modification_time: preserve
+    path: "{{ pf_ipdb_dir }}"
+    owner: root
+    group: wheel
+    mode: '0750'
+
+- name: 'ipdbtools: create periodic script'
+  template:
+    dest: "/usr/local/etc/periodic/{{ pf_ipdb_when }}/ipdbtools"
+    src: ipdbtools.j2
+    owner: root
+    group: wheel
+    mode: "0755"

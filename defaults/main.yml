@@ -4,6 +4,14 @@
 pf_fail2ban: False
 pf_fail2ban_dir: '/usr/local/etc/fail2ban'
 
+pf_ipdbtools: False
+pf_ipdb_when: weekly    # Values can also be daily or security
+pf_ipdb_dir: '/usr/local/etc/ipdbtools'
+pf_ipdb_table: 'ipdb'
+pf_ipdb_cc_block:
+  - CN
+  - RU
+
 pf_primary_interface: 'em0'
 
 pf_udp_pass:
@@ -22,6 +30,7 @@ pf_tables:
   - { key: 'me', value: "const { {{ (ansible_all_ipv4_addresses + ansible_all_ipv6_addresses) | join(' ') }} }" }
   - { key: 'privatenets', value: "const { 0.0.0.0/8 10.0.0.0/8 20.20.20.0/24 127.0.0.0/8 169.254.0.0/16 172.16.0.0/12 192.0.2.0/24 192.168.0.0/16 224.0.0.0/3 }" }
   #- { key: 'f2b', value: 'persist counters file "/var/db/fail2ban/fail2ban.txt"'
+  #- { key: '{{ pf_ipdb_table }}', value: 'persist counters file "{{ pf_ipdb_dir }}/ipdb.txt"'
 
 pf_options:
   - { key: 'ruleset-optimization', value: 'basic' }
@@ -34,6 +43,7 @@ pf_options:
 pf_rules:
   - 'scrub in all'
   #- "block drop in quick log on {{ pf_primary_interface }} from <f2b> to any"                                      # Enable if we want to use py-fail2ban
+  #- "block drop in quick log on {{ pf_primary_interface }} from <{{ pf_ipdb_table }}> to any"                      # Enable if we want to use ipdbtools to block countries
   #- "block drop in from any to any port { {{ pf_nolog_ports | join(' ') }} }"                                      # Do not log certain traffic
   # NAT based rules
   #- "nat on {{ pf_primary_interface }} inet from !({{ pf_primary_interface }}) -> ({{ pf_primary_interface }}:0)"

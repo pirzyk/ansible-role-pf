@@ -1,0 +1,15 @@
+#!/bin/sh
+
+echo ""
+echo "Reloading Geo IP firewall rules:"
+
+# Download the latest IP country code assignments
+/usr/local/bin/ipdb-update.sh > /dev/null 2>&1 || exit $?
+
+# Generate the new pf table file
+/usr/local/bin/ipup -t {{ pf_ipdb_cc_block | join(':') }} -p > {{ pf_ipdb_dir }}/ipdb.txt || exit $?
+
+# Reload the table
+/sbin/pfctl -T replace -t {{ pf_ipdb_table }} -f {{ pf_ipdb_dir }}/ipdb.txt
+
+exit $?

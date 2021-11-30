@@ -24,6 +24,11 @@
     file: 'fail2ban.yml'
   when: pf_fail2ban|bool
 
+- name: Install ipdbtools
+  include_tasks:
+    file: 'ipdbtools.yml'
+  when: pf_ipdbtools|bool
+
 - name: ensure pf.conf is created
   template:
     dest: /etc/pf.conf
