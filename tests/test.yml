@@ -1,6 +1,6 @@
 ---
 
-- hosts: all
+- hosts: lab
   become: True
   roles:
   - role: coffeesprout.pf

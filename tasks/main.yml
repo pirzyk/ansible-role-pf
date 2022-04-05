@@ -32,6 +32,9 @@
     src: pf.conf
     backup: yes
     validate: '/sbin/pfctl -nf %s'
+    owner: 0
+    group: 0
+    mode: '0600'
   tags:
   - configure
 
