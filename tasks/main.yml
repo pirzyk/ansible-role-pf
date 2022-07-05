@@ -36,8 +36,8 @@
     backup: yes
     validate: '/sbin/pfctl -nf %s'
     owner: 0
-    group: 0
-    mode: '0600'
+    group: 'network'
+    mode: '0640'
   notify: Reload PF
   tags:
   - configure
