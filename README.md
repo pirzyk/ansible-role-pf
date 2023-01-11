@@ -54,21 +54,21 @@ The TCP ports to allow out of the machine (for example 22 for SSH to other hosts
 The UDP ports to allow in both directions
 
     pf_rc_conf:
-    - name: "pf_enable"
+    - name: "pf\_enable"
       value: "YES"
-    - name: "pf_flags"
+    - name: "pf\_flags"
       value: ""
-    - name: "pflog_enable"
+    - name: "pflog\_enable"
       value: "YES"
-    - name: "pflog_logfile"
+    - name: "pflog\_logfile"
       value: "/var/log/pflog"
-    - name: "pflog_flags"
+    - name: "pflog\_flags"
       value: ""
-    - name: "pf_rules"
+    - name: "pf\_rules"
       value: "/etc/pf.conf"
-    - name: "gateway_enable"
+    - name: "gateway\_enable"
       value: "{{ pf_enable_gateway | ternary('YES', 'NO') }}"
-    - name: "ipv6_gateway_enable"
+    - name: "ipv6\_gateway\_enable"
       value: "{{ pf_enable_gateway | ternary('YES', 'NO') }}"
 
 The extra settings that will be added to /etc/rc.conf
@@ -83,9 +83,23 @@ Example Playbook
 
 Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
 
-    - hosts: servers
+    - hosts: vpn-servers
       roles:
-         - { role: coffeesprout.pf }
+      - role: coffeesprout.pf
+        pf_enable_gateway: True
+        pf_tcp_pass_out:
+        - 22
+        - 80
+        - 443
+        pf_tcp_pass_in:
+        - 22
+        - 1194
+        pf_udp_pass:
+        - 53
+        - 113
+        - 1194
+
+
 
 License
 -------
