@@ -23,11 +23,15 @@
   include_tasks:
     file: 'fail2ban.yml'
   when: pf_fail2ban|bool
+  tags:
+  - fail2ban
 
 - name: Install ipdbtools
   include_tasks:
     file: 'ipdbtools.yml'
   when: pf_ipdbtools|bool
+  tags:
+  - ipdb
 
 - name: ensure pf.conf is created
   template:
@@ -35,9 +39,9 @@
     src: pf.conf.j2
     backup: yes
     validate: '/sbin/pfctl -nf %s'
-    owner: 0
+    owner: 'root'
     group: 'network'
-    mode: '0640'
+    mode: '640'
   notify: Reload PF
   tags:
   - configure

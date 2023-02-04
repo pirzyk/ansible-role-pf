@@ -16,6 +16,16 @@
     group: wheel
     mode: '0750'
 
+- name: 'ipdbtools: create persist file'
+  ansible.builtin.file:
+    state: touch
+    access_time: preserve
+    modification_time: preserve
+    path: "{{ pf_ipdb_persistfile }}"
+    owner: root
+    group: wheel
+    mode: '0640'
+
 - name: 'ipdbtools: create periodic script'
   template:
     dest: "/usr/local/etc/periodic/{{ pf_ipdb_when }}/ipdbtools"

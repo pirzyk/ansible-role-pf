@@ -6,6 +6,12 @@
     name: "py{{ ansible_python.version.major }}{{ ansible_python.version.minor }}-fail2ban"
     state: present
 
+- name: "fail2ban: Set fail2ban_enable YES"
+  ansible.builtin.lineinfile:
+    dest: /etc/rc.conf
+    regexp: '^\s*fail2ban_enable\s*=(.*)$'
+    line: 'fail2ban_enable="YES"'
+
 - name: 'fail2ban: create db dir'
   ansible.builtin.file:
     state: directory
@@ -14,17 +20,27 @@
     path: '/var/db/fail2ban'
     owner: root
     group: wheel
-    mode: "0750"
+    mode: '0750'
 
 - name: 'fail2ban: create persist file'
   ansible.builtin.file:
     state: touch
     access_time: preserve
     modification_time: preserve
-    path: '/var/db/fail2ban/fail2ban.txt'
+    path: "{{ pf_fail2ban_persistfile }}"
     owner: root
     group: wheel
-    mode: "0644"
+    mode: '0644'
+
+- name: 'fail2ban: create log file'
+  ansible.builtin.file:
+    state: touch
+    access_time: preserve
+    modification_time: preserve
+    path: "{{ pf_fail2ban_logfile }}"
+    owner: root
+    group: wheel
+    mode: "{{ pf_fail2ban_logfile_mode }}"
 
 - name: 'fail2ban: add openvpn filter'
   ansible.builtin.copy:
@@ -32,7 +48,7 @@
     dest: "{{ pf_fail2ban_dir }}/filter.d/openvpn.local"
     owner: root
     group: wheel
-    mode: "0644"
+    mode: '0644'
   notify: restart fail2ban
 
 - name: 'fail2ban: add milter-regex filter'
@@ -41,7 +57,7 @@
     dest: "{{ pf_fail2ban_dir }}/filter.d/milter-regex.local"
     owner: root
     group: wheel
-    mode: "0644"
+    mode: '0644'
   notify: restart fail2ban
 
 - name: 'fail2ban: add bsd-pf config'
@@ -50,25 +66,33 @@
     dest: "{{ pf_fail2ban_dir }}/action.d/bsd-pf.conf"
     owner: root
     group: wheel
-    mode: "0644"
+    mode: '0644'
   notify: restart fail2ban
 
+- name: 'fail2ban: add fail2ban-flushlogs script'
+  ansible.builtin.copy:
+    src: 'fail2ban-flushlogs'
+    dest: '/usr/local/bin/fail2ban-flushlogs'
+    owner: root
+    group: wheel
+    mode: '0755'
+
 - name: 'fail2ban: create fail2ban.local'
-  template:
+  ansible.builtin.template:
     dest: "{{ pf_fail2ban_dir }}/fail2ban.local"
     src: fail2ban.local.j2
     owner: root
     group: wheel
-    mode: "0644"
+    mode: '0644'
   notify: restart fail2ban
 
 - name: 'fail2ban: create jail.local'
-  template:
+  ansible.builtin.template:
     dest: "{{ pf_fail2ban_dir }}/jail.local"
     src: jail.local.j2
     owner: root
     group: wheel
-    mode: "0644"
+    mode: '0644'
   notify: restart fail2ban
 
 - name: 'fail2ban: enable jail services'
@@ -77,7 +101,7 @@
     dest: "{{ pf_fail2ban_dir }}/jail.d/{{ item }}.local"
     owner: root
     group: wheel
-    mode: "0644"
+    mode: '0644'
   with_items: "{{ pf_fail2ban_conf | default([]) }}"
   loop_control:
     label: "{{ item }}.local"
