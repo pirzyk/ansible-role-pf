@@ -5,6 +5,8 @@ pf_fail2ban: False
 pf_fail2ban_table: f2b
 pf_fail2ban_dir: '/usr/local/etc/fail2ban'
 pf_fail2ban_persistfile: '/var/db/fail2ban/fail2ban.txt'
+pf_pflog_owner: root
+pf_pflog_group: network
 pf_fail2ban_purge: '1d'
 pf_fail2ban_loglevel: 'INFO'
 pf_fail2ban_bantime: '90days'
