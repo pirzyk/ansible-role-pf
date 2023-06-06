@@ -1,6 +1,6 @@
 [DEFAULT]
-bantime = 90days
-findtime = 1day
-ignoreip = 127.0.0.1 ::1 fe80::/10 {{ pf_my_network|join(' ') }}
+bantime = {{ pf_fail2ban_bantime }}
+findtime = {{ pf_fail2ban_findtime }}
+ignoreip = {{ pf_fail2ban_ignoreip|join(' ') }}
 
 action = bsd-pf[actiontype=<allports>]
