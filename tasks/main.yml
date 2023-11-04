@@ -18,7 +18,7 @@
   - sysctl
 
 - name: ensure pf is enabled in rc.conf
-  sysrc:
+  community.general.sysrc:
     name: "{{ item.name }}"
     value: "{{ item.value }}"
   loop: "{{ pf_rc_conf }}"
