@@ -95,3 +95,4 @@
   with_items: "{{ pf_fail2ban_conf | default([]) }}"
   loop_control:
     label: "{{ item }}.local"
+  notify: restart fail2ban
