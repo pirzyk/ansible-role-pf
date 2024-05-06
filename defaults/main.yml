@@ -1,6 +1,11 @@
 ---
 # Some sane PF defaults
 
+pf_device_name: '/dev/pf'
+pf_device_owner: root
+pf_device_group: wheel
+pf_device_mode: '600'
+
 pf_fail2ban: False
 pf_fail2ban_table: f2b
 pf_fail2ban_dir: '/usr/local/etc/fail2ban'

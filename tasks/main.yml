@@ -45,3 +45,15 @@
   notify: Reload PF
   tags:
   - configure
+
+- name: 'pf: verify device owner/group/mode'
+  ansible.builtin.file:
+    state: file
+    access_time: preserve
+    modification_time: preserve
+    path: "{{ pf_device_name }}"
+    owner: "{{ pf_device_owner }}"
+    group: "{{ pf_device_group }}"
+    mode: "{{ pf_device_mode }}"
+  tags:
+  - configure
