@@ -48,6 +48,7 @@
     owner: "{{ pf_pflog_owner }}"
     group: "{{ pf_pflog_group }}"
     mode: '0644'
+  when: pf_fail2ban_milter_regex|bool
   notify: restart fail2ban
 
 - name: 'fail2ban: add bsd-pf config'

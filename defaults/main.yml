@@ -20,6 +20,7 @@ pf_fail2ban_ignoreip:
   - 127.0.0.1
   - ::1
   - fe80::/10
+pf_fail2ban_milter_regex: False
 
 pf_ipdbtools: False
 pf_ipdb_when: weekly    # Values can also be daily or security
